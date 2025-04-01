@@ -1,54 +1,23 @@
 import prisma from "../../../lib/prisma";
-import { Post } from "@prisma/client";
 import { NextResponse } from "next/server";
-
-// export async function GET(request: Request) {
-//   const { searchParams } = new URL(request.url);
-//   const tag = searchParams.get("tag");
-
-//   try {
-//     let posts;
-//     if (tag) {
-//       posts = await prisma.post.findMany({
-//         where: { tags: { has: tag || "" } }, // Тухайн tag-тэй постуудыг хайна
-//       });
-//     } else {
-//       posts = await prisma.post.findMany();
-//     }
-
-//     return NextResponse.json(posts, { status: 200 });
-//   } catch (error) {
-//     return NextResponse.json({ error: "Алдаа гарлаа" }, { status: 500 });
-//   }
-// }
-
-export async function POST(request: Request) {
-  const { title, content, imageUrl, tags }: Partial<Post> =
-    await request.json();
-
-  // Тагуудын утгуудыг шалгах
-  const post = await prisma.post.create({
-    data: {
-      title: title!,
-      content: content!,
-      imageUrl,
-      tags: tags && Array.isArray(tags) ? tags : [],
-    },
-  });
-
-  return Response.json(post);
-}
+import { Post } from "@prisma/client";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const tag = searchParams.get("tag");
+  const latest = searchParams.get("latest");
 
   try {
-    let posts;
+    let posts: Post[];
     if (tag) {
       posts = await prisma.post.findMany({
-        where: { tags: { has: tag || "" } },
-        orderBy: { createdAt: "desc" }, // Шинэ нь эхэнд гарах
+        where: { tags: { has: tag } },
+        orderBy: { createdAt: "desc" },
+      });
+    } else if (latest === "true") {
+      posts = await prisma.post.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 10,
       });
     } else {
       posts = await prisma.post.findMany({
@@ -58,6 +27,41 @@ export async function GET(request: Request) {
 
     return NextResponse.json(posts, { status: 200 });
   } catch (error) {
+    console.error("Error fetching posts:", error);
+    return NextResponse.json({ error: "Алдаа гарлаа" }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  const {
+    title,
+    content,
+    imageUrl,
+    tags,
+    authorId,
+  }: Partial<Post> & { authorId: string } = await request.json();
+
+  // Validate required fields
+  if (!title || !content || !authorId) {
+    return NextResponse.json(
+      { error: "Title, content, and authorId are required" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    const post = await prisma.post.create({
+      data: {
+        title,
+        content,
+        imageUrl: imageUrl || null,
+        tags: tags && Array.isArray(tags) ? tags : [],
+        authorId, // Now required
+      },
+    });
+    return NextResponse.json(post, { status: 201 });
+  } catch (error) {
+    console.error("Error creating post:", error);
     return NextResponse.json({ error: "Алдаа гарлаа" }, { status: 500 });
   }
 }

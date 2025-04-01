@@ -1,11 +1,5 @@
-import type { Metadata } from "next";
+import ClientSessionProvider from "../components/ClientSessionProvider";
 import "./globals.css";
-// import TopNav from "./sidenav";
-
-export const metadata: Metadata = {
-  title: "Your Blog",
-  description: "A personal blog platform",
-};
 
 export default function RootLayout({
   children,
@@ -13,10 +7,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="mn">
+    <html lang="en">
       <body>
-        {/* <TopNav /> */}
-        <main className="">{children}</main>
+        <ClientSessionProvider>{children}</ClientSessionProvider>
       </body>
     </html>
   );

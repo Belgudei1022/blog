@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { NotebookPen, List } from "lucide-react";
+import { NotebookPen, List, User } from "lucide-react";
 
 const Nav = () => {
   return (
@@ -20,6 +20,12 @@ const Nav = () => {
             <div className="flex flex-row gap-[5px]">
               <NotebookPen />
               <p className="font-medium">Add Post</p>
+            </div>
+          </Link>
+          <Link href="/profile">
+            <div className="flex flex-row gap-[5px]">
+              <User />
+              <p className="font-medium">Profile</p>
             </div>
           </Link>
         </div>

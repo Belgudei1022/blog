@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Post } from "../../../lib/types";
 import { Image, Tag } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 const availableTags = ["Tech", "Life", "Education", "Health", "Travel"];
 
@@ -16,6 +17,9 @@ export default function NewPost() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
+  const { data: session } = useSession();
+  const authorId = session?.user.id;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -24,9 +28,15 @@ export default function NewPost() {
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, content, imageUrl, tags: selectedTags }),
+        body: JSON.stringify({
+          title: title,
+          content: content,
+          imageUrl:imageUrl,
+          tags: selectedTags,
+          authorId,
+        }),
       });
-
+      const data = await res.json();
       if (res.ok) {
         router.push("/posts");
       } else {
@@ -43,7 +53,9 @@ export default function NewPost() {
 
   const toggleTag = (tag: string) => {
     setSelectedTags((prevTags) =>
-      prevTags.includes(tag) ? prevTags.filter((t) => t !== tag) : [...prevTags, tag]
+      prevTags.includes(tag)
+        ? prevTags.filter((t) => t !== tag)
+        : [...prevTags, tag]
     );
   };
 
@@ -64,7 +76,9 @@ export default function NewPost() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Гарчиг</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Гарчиг
+              </label>
               <input
                 type="text"
                 placeholder="Нийтлэлийн гарчиг оруулна уу"
@@ -76,7 +90,9 @@ export default function NewPost() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Агуулга</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Агуулга
+              </label>
               <textarea
                 placeholder="Таны бодол, түүх..."
                 value={content}
@@ -88,7 +104,9 @@ export default function NewPost() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Зураг (сонголттой)</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Зураг (сонголттой)
+              </label>
               <div className="flex">
                 <input
                   type="url"
@@ -105,7 +123,9 @@ export default function NewPost() {
 
             {/* Таг сонгох хэсэг */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Тагууд</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Тагууд
+              </label>
               <div className="flex flex-wrap gap-2">
                 {availableTags.map((tag) => (
                   <button
@@ -116,8 +136,7 @@ export default function NewPost() {
                       selectedTags.includes(tag)
                         ? "bg-gray-800 text-white"
                         : "bg-gray-300 text-gray-800 hover:bg-gray-400"
-                    } transition`}
-                  >
+                    } transition`}>
                     #{tag}
                   </button>
                 ))}
@@ -135,8 +154,7 @@ export default function NewPost() {
                 <button
                   type="button"
                   onClick={addCustomTag}
-                  className="px-4 bg-gray-800 text-white rounded-r-md hover:bg-gray-900 transition"
-                >
+                  className="px-4 bg-gray-800 text-white rounded-r-md hover:bg-gray-900 transition">
                   <Tag size={20} />
                 </button>
               </div>
@@ -147,15 +165,13 @@ export default function NewPost() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-grow flex items-center justify-center bg-gray-900 text-white py-3 px-6 rounded-md hover:bg-black focus:ring-2 focus:ring-gray-700 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+                className="flex-grow flex items-center justify-center bg-gray-900 text-white py-3 px-6 rounded-md hover:bg-black focus:ring-2 focus:ring-gray-700 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
                 {isSubmitting ? "Хадгалж байна..." : "Нийтлэл Үүсгэх"}
               </button>
               <button
                 type="button"
                 onClick={() => router.push("/posts")}
-                className="flex-grow flex items-center justify-center bg-gray-200 text-gray-800 py-3 px-6 rounded-md hover:bg-gray-300 focus:ring-2 focus:ring-gray-400 transition duration-300"
-              >
+                className="flex-grow flex items-center justify-center bg-gray-200 text-gray-800 py-3 px-6 rounded-md hover:bg-gray-300 focus:ring-2 focus:ring-gray-400 transition duration-300">
                 Цуцлах
               </button>
             </div>

@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import PostCard from "../../components/PostCard";
 import Nav from "@/components/nav";
 import Link from "next/link";
+import { Post } from "@/lib/types";
 
 export default function Posts() {
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const availableTags = ["Tech", "Life", "Education", "Health", "Travel"];
 
@@ -14,7 +15,7 @@ export default function Posts() {
     const fetchPosts = async () => {
       const url = selectedTag ? `/api/posts?tag=${selectedTag}` : "/api/posts";
       const res = await fetch(url, { cache: "no-store" });
-      const data = await res.json();
+      const data: Post[] = await res.json();
       setPosts(data);
     };
     fetchPosts();
@@ -34,15 +35,14 @@ export default function Posts() {
               selectedTag === tag
                 ? "bg-blue-600 text-white"
                 : "bg-gray-300 text-gray-800"
-            }`}
-          >
+            }`}>
             {tag}
           </button>
         ))}
       </div>
       <div className="flex flex-col gap-6">
         {posts.length > 0 ? (
-          posts.map((post: any) => (
+          posts.map((post) => (
             <Link key={post.id} href={`/posts/${post.id}`}>
               <div className="group hover:shadow-lg transform transition-all duration-300">
                 <PostCard post={post} />
