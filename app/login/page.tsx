@@ -1,32 +1,47 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
 
 const Page = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const router = useRouter();
   const { data: session, status } = useSession();
 
   useEffect(() => {
-    if (session?.token) {
-      const jwtToken = session.token as string;
-      sessionStorage.setItem("jwtToken", jwtToken);
-      console.log("JWT Token saved:", jwtToken);
-    }
-  }, [session]);
-
-  useEffect(() => {
     if (status === "authenticated") {
+      // Save JWT token to sessionStorage if needed
+      if (session) {
+        sessionStorage.setItem("jwtToken", JSON.stringify(session));
+      }
       router.push("/posts/new");
     }
-  }, [status, router]);
+  }, [status, session, router]);
 
-  const handleGoogleSignIn = () => {
-    signIn("google", { callbackUrl: "/" });
+  const handleEmailSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+
+    if (result?.error) {
+      setError(result.error);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signIn("google", { callbackUrl: "/posts/new" });
+    } catch (error) {
+      console.error("Google sign-in error:", error);
+    }
   };
 
   return (
@@ -36,7 +51,12 @@ const Page = () => {
           <div className="mb-8 text-center">
             <h1 className="text-3xl font-bold text-gray-900">Нэвтрэлт</h1>
           </div>
-          <form className="space-y-6 flex flex-col">
+          {error && (
+            <div className="text-red-500 text-center mb-4">{error}</div>
+          )}
+          <form
+            onSubmit={handleEmailSignIn}
+            className="space-y-6 flex flex-col">
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Цахим шуудан
@@ -66,6 +86,7 @@ const Page = () => {
             <div className="flex flex-col space-y-4">
               <button
                 type="submit"
+                disabled={status === "loading"}
                 className="flex-grow flex items-center justify-center bg-gray-900 text-white py-3 px-6 rounded-md hover:bg-black focus:ring-2 focus:ring-gray-700 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
                 Нэвтрэх
               </button>

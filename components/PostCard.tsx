@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Post } from "../lib/types";
 
 export default function PostCard({ post }: { post: Post }) {
-  console.log(post);
   return (
     <div className="w-[700px] h-fit flex flex-row gap-[10px] border-b border-gray-300 py-10">
       <img

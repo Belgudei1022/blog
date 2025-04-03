@@ -15,3 +15,10 @@ export interface Comment {
   postId: string;
   authorId: string;
 }
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: string | null;
+  image: "string";
+}

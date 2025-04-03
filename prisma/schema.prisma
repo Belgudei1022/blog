@@ -7,15 +7,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Simplified User model with only requested fields
+
 model User {
   id        String    @id @default(auto()) @map("_id") @db.ObjectId
   name      String?
   image     String?
+  email     String    @unique
+  emailVerified DateTime?
+  savedPosts  String?
+  likedPosts  String?
+  likes     String
+  saved     
   accounts  Account[]
-  sessions  Session[]
   posts     Post[]
   comments  Comment[]
+}
+
+model Like {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  
 }
 
 model Account {
@@ -36,23 +46,6 @@ model Account {
   @@unique([provider, providerAccountId])
 }
 
-model Session {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  sessionToken String   @unique
-  userId       String   @db.ObjectId
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model VerificationToken {
-  identifier String   @id @map("_id")
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
-// Updated Post model
 model Post {
   id        String    @id @default(auto()) @map("_id") @db.ObjectId
   title     String
@@ -74,3 +67,4 @@ model Comment {
   post      Post     @relation(fields: [postId], references: [id])
   user      User     @relation(fields: [authorId],references: [id])
 }
+

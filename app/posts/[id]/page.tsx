@@ -1,18 +1,37 @@
+"use client";
+
 import CommentForm from "../../../components/CommentForm";
 import Nav from "@/components/nav";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 
-export default async function PostPage({ params }: { params: { id: string } }) {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
-  const res = await fetch(`${baseUrl}/api/posts/${params.id}`, {
-    cache: "no-store",
-  });
+export default function PostPage() {
+  const params = useParams();
+  const postId = params.id as string;
 
-  if (!res.ok) {
-    return <div>Post not found</div>;
-  }
+  const [post, setPost] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const post = await res.json();
+  useEffect(() => {
+    const fetchPost = async () => {
+      const baseUrl =
+        process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
+      const res = await fetch(`${baseUrl}/api/posts/${postId}`, {
+        cache: "no-store",
+      });
+
+      if (res.ok) {
+        setPost(await res.json());
+      }
+      setLoading(false);
+    };
+
+    fetchPost();
+  }, [postId]);
+
+  if (loading) return <div>Loading...</div>;
+  if (!post) return <div>Post not found</div>;
 
   return (
     <div className="w-full h-screen flex items-center flex-col gap-[70px]">
@@ -49,7 +68,7 @@ export default async function PostPage({ params }: { params: { id: string } }) {
         <CommentForm postId={post.id} />
       </div>
       <div className="mt-6">
-        <Link href="/posts" className="text-blue-600 hover:underline">
+        <Link href="./" className="text-blue-600 hover:underline">
           Back to Posts
         </Link>
       </div>
